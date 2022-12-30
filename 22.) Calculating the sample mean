@@ -1,0 +1,965 @@
+Calculating the sample mean
+The late_shipments dataset contains supply chain data on the delivery of medical supplies. Each row represents one delivery of a part. The late columns denotes whether or not the part was delivered late. A value of "Yes" means that the part was delivered late, and a value of "No" means the part was delivered on time.
+
+You'll begin your analysis by calculating a point estimate (or sample statistic), namely the proportion of late shipments.
+
+In pandas, a value's proportion in a categorical DataFrame column can be quickly calculated using the syntax:
+
+prop = (df['col'] == val).mean()
+late_shipments is available, and pandas is loaded as pd.
+
+Instructions 1/2
+50 XP
+Print the late_shipments dataset.
+
+# Print the late_shipments dataset
+print(late_shipments)
+
+Calculate the proportion of late shipments in the sample; that is, the mean cases where the late column is "Yes".
+
+# Print the late_shipments dataset
+print(late_shipments)
+
+# Calculate the proportion of late shipments
+late_prop_samp = (late_shipments['late'] == 'Yes').mean()
+
+# Print the results
+print(late_prop_samp)
+
+Calculating a z-score
+Since variables have arbitrary ranges and units, we need to standardize them. For example, a hypothesis test that gave different answers if the variables were in Euros instead of US dollars would be of little value. Standardization avoids that.
+
+One standardized value of interest in a hypothesis test is called a z-score. To calculate it, you need three numbers: the sample statistic (point estimate), the hypothesized statistic, and the standard error of the statistic (estimated from the bootstrap distribution).
+
+The sample statistic is available as late_prop_samp.
+
+late_shipments_boot_distn is a bootstrap distribution of the proportion of late shipments, available as a list.
+
+pandas and numpy are loaded with their usual aliases.
+
+Instructions
+70 XP
+Hypothesize that the proportion of late shipments is 6%.
+Calculate the standard error from the standard deviation of the bootstrap distribution.
+Calculate the z-score.
+
+# Hypothesize that the proportion is 6%
+late_prop_hyp = 0.06
+
+# Calculate the standard error
+std_error = np.std(late_shipments_boot_distn , ddof = 1)
+
+# Find z-score of late_prop_samp
+z_score = (late_prop_samp - late_prop_hyp) / std_error
+
+# Print z_score
+print(z_score)
+
+Calculating p-values
+In order to determine whether to choose the null hypothesis or the alternative hypothesis, you need to calculate a p-value from the z-score.
+
+You'll now return to the late shipments dataset and the proportion of late shipments.
+
+The null hypothesis, , is that the proportion of late shipments is six percent.
+
+The alternative hypothesis, , is that the proportion of late shipments is greater than six percent.
+
+The observed sample statistic, late_prop_samp, the hypothesized value, late_prop_hyp (6%), and the bootstrap standard error, std_error are available. norm from scipy.stats has also been loaded without an alias.
+
+Instructions 1/2
+50 XP
+1
+2
+Question
+What type of test should be used for this alternative hypothesis?
+Right- Tailed
+
+
+Calculate the z-score of late_prop_samp.
+Calculate the p-value for the z-score, using a right-tailed test.
+
+# Calculate the z-score of late_prop_samp
+z_score = (late_prop_samp - late_prop_hyp) / std_error
+
+# Calculate the p-value
+p_value = 1 - norm.cdf(z_score , loc = 0 , scale = 1)
+                 
+# Print the p-value
+print(p_value) 
+
+Calculating a confidence interval
+If you give a single estimate of a sample statistic, you are bound to be wrong by some amount. For example, the hypothesized proportion of late shipments was 6%. Even if evidence suggests the null hypothesis that the proportion of late shipments is equal to this, for any new sample of shipments, the proportion is likely to be a little different due to sampling variability. Consequently, it's a good idea to state a confidence interval. That is, you say, "we are 95% 'confident' that the proportion of late shipments is between A and B" (for some value of A and B).
+
+Sampling in Python demonstrated two methods for calculating confidence intervals. Here, you'll use quantiles of the bootstrap distribution to calculate the confidence interval.
+
+late_prop_samp and late_shipments_boot_distn are available; pandas and numpy are loaded with their usual aliases.
+
+Instructions 1/2
+50 XP
+2
+Calculate a 95% confidence interval from late_shipments_boot_distn using the quantile method, labeling the lower and upper intervals lower and upper.
+
+# Calculate 95% confidence interval using quantile method
+lower = np.quantile(late_shipments_boot_distn, 0.025)
+upper = np.quantile(late_shipments_boot_distn, 0.975)
+
+# Print the confidence interval
+print((lower, upper))
+
+
+
+
+Question
+Does the confidence interval match up with the conclusion to stick with the original assumption that 6% is a reasonable value for the unknown population parameter?
+
+
+Two sample mean test statistic
+The hypothesis test for determining if there is a difference between the means of two populations uses a different type of test statistic to the z-scores you saw in Chapter 1. It's called "t", and it can be calculated from three values from each sample using this equation.
+
+ 
+ 
+ 
+
+While trying to determine why some shipments are late, you may wonder if the weight of the shipments that were on time is less than the weight of the shipments that were late. The late_shipments dataset has been split into a "yes" group, where late == "Yes" and a "no" group where late == "No". The weight of the shipment is given in the weight_kilograms variable.
+
+The sample means for the two groups are available as xbar_no and xbar_yes. The sample standard deviations are s_no and s_yes. The sample sizes are n_no and n_yes. numpy is also loaded as np.
+
+Instructions
+100 XP
+Calculate the numerator of the  test statistic.
+Calculate the denominator of the  test statistic.
+Use those two numbers to calculate the  test statistic.
+
+
+# Calculate the numerator of the test statistic
+numerator = xbar_no - xbar_yes
+
+# Calculate the denominator of the test statistic
+denominator = np.sqrt(s_no ** 2 / n_no + s_yes **2 / n_yes) 
+
+# Calculate the test statistic
+t_stat = numerator / denominator
+
+# Print the test statistic
+print(t_stat)
+
+From t to p
+Previously, you calculated the test statistic for the two-sample problem of whether the mean weight of shipments is smaller for shipments that weren't late (late == "No") compared to shipments that were late (late == "Yes"). In order to make decisions about it, you need to transform the test statistic with a cumulative distribution function to get a p-value.
+
+Recall the hypotheses:
+
+: The mean weight of shipments that weren't late is the same as the mean weight of shipments that were late.
+
+: The mean weight of shipments that weren't late is less than the mean weight of shipments that were late.
+
+The test statistic, t_stat, is available, as are the samples sizes for each group, n_no and n_yes. Use a significance level of alpha = 0.05.
+
+t has also been imported from scipy.stats.
+
+Instructions 1/3
+35 XP
+2
+3
+Question
+What type of test does the alternative hypothesis indicate that we need?
+
+Left-tailed
+
+Calculate the degrees of freedom for the test.
+Compute the p-value using the test statistic, t_stat.
+
+
+# Calculate the degrees of freedom
+degrees_of_freedom = n_no + n_yes - 2
+
+# Calculate the p-value from the test stat
+p_value = t.cdf(t_stat , df = degrees_of_freedom)
+
+# Print the p_value
+print(p_value)
+
+Visualizing the difference
+Before you start running hypothesis tests, it's a great idea to perform some exploratory data analysis; that is, calculating summary statistics and visualizing distributions.
+
+Here, you'll look at the proportion of county-level votes for the Democratic candidate in 2012 and 2016, sample_dem_data. Since the counties are the same in both years, these samples are paired. The columns containing the samples are dem_percent_12 and dem_percent_16.
+
+dem_votes_potus_12_16 is available as sample_dem_data. pandas and matplotlib.pyplot are loaded with their usual aliases.
+
+Instructions 1/4
+1 XP
+1
+2
+3
+4
+Create a new diff column containing the percentage of votes for the democratic candidate in 2012 minus the percentage of votes for the democratic candidate in 2016.
+
+# Calculate the differences from 2012 to 2016
+sample_dem_data['diff'] = sample_dem_data['dem_percent_12'] - sample_dem_data['dem_percent_16']
+
+# Print sample_dem_data
+print(sample_dem_data)
+
+Calculate the mean of the diff column as xbar_diff.
+
+# Calculate the differences from 2012 to 2016
+sample_dem_data['diff'] = sample_dem_data['dem_percent_12'] - sample_dem_data['dem_percent_16']
+
+# Find the mean of the diff column
+xbar_diff = sample_dem_data['diff'].mean()
+
+# Print xbar_diff
+print(xbar_diff)
+
+Calculate the standard deviation of the diff column as s_diff.
+# Calculate the differences from 2012 to 2016
+sample_dem_data['diff'] = sample_dem_data['dem_percent_12'] - sample_dem_data['dem_percent_16']
+
+# Find the mean of the diff column
+xbar_diff = sample_dem_data['diff'].mean()
+
+# Find the standard deviation of the diff column
+s_diff = sample_dem_data['diff'].std()
+
+# Print s_diff
+print(s_diff)
+
+
+Plot a histogram of the diff column with 20 bins.
+
+
+# Calculate the differences from 2012 to 2016
+sample_dem_data['diff'] = sample_dem_data['dem_percent_12'] - sample_dem_data['dem_percent_16']
+
+# Find the mean of the diff column
+xbar_diff = sample_dem_data['diff'].mean()
+
+# Find the standard deviation of the diff column
+s_diff = sample_dem_data['diff'].std()
+
+# Plot a histogram of diff with 20 bins
+sample_dem_data['diff'].hist(bins=20)
+plt.show()
+
+Using ttest()
+Manually calculating test statistics and transforming them with a CDF to get a p-value is a lot of effort to compare two sample means. The comparison of two sample means is called a t-test, and the pingouin Python package has a .ttest() method to accomplish it. This method provides some flexibility in how you perform the test.
+
+As in the previous exercise, you'll explore the difference between the proportion of county-level votes for the Democratic candidate in 2012 and 2016 to identify if the difference is significant. The hypotheses are as follows:
+
+: The proportion of democratic votes in 2012 and 2016 were the same. : The proportion of democratic votes in 2012 and 2016 were different.
+
+sample_dem_data is available and has the columns diff, dem_percent_12, and dem_percent_16 in addition to the state and county names. pingouin and has been loaded along with pandas as pd.
+
+Instructions 1/4
+25 XP
+2
+3
+4
+Conduct a t-test on the sample differences (the diff column of sample_dem_data), using an appropriate alternative hypothesis chosen from "two-sided", "less", and "greater".
+
+
+# Conduct a t-test on diff
+test_results = pingouin.ttest(x = sample_dem_data['diff'] , y = 0 , alternative ='two-sided'  )
+
+
+                              
+# Print the test results
+print(test_results)
+
+Question
+What's the correct decision from the t-test, assuming a = 0.01 ?
+
+reject the null hypothesis
+
+
+
+Conduct a paired test on the democratic votes in 2012 and 2016 (the dem_percent_12 and dem_percent_16 columns of sample_dem_data), using an appropriate alternative hypothesis.
+
+
+# Conduct a t-test on diff
+test_results = pingouin.ttest(x=sample_dem_data['diff'], 
+                              y=0, 
+                              alternative="two-sided")
+
+# Conduct a paired t-test on dem_percent_12 and dem_percent_16
+paired_test_results = pingouin.ttest(x=sample_dem_data['dem_percent_12'], 
+                              y=sample_dem_data['dem_percent_16'], 
+                              paired = True,
+                              alternative="two-sided")
+
+
+
+
+                              
+# Print the paired test results
+print(paired_test_results)
+
+
+Question
+Compare the paired t-test to an (inappropriate) unpaired test on the same data. How does the p-value change?
+
+pingouin.ttest(x=sample_dem_data['dem_percent_12'], 
+               y=sample_dem_data['dem_percent_16'], 
+               alternative="two-sided")
+               
+  The p-value from the unpaired test is greater than than the p-value from the paired test.
+
+
+Visualizing many categories
+So far in this chapter, we've only considered the case of differences in a numeric variable between two categories. Of course, many datasets contain more categories. Before you get to conducting tests on many categories, it's often helpful to perform exploratory data analysis (EDA), calculating summary statistics for each group and visualizing the distributions of the numeric variable for each category using box plots.
+
+Here, we'll return to the late shipments data, and how the price of each package (pack_price) varies between the three shipment modes (shipment_mode): "Air", "Air Charter", and "Ocean".
+
+late_shipments is available; pandas and matplotlib.pyplot are loaded with their standard aliases, and seaborn is loaded as sns.
+
+Instructions 1/3
+35 XP
+1
+2
+3
+Group late_shipments by shipment_mode and calculate the mean pack_price for each group, storing the result in xbar_pack_by_mode.
+
+# Calculate the mean pack_price for each shipment_mode
+xbar_pack_by_mode = late_shipments.groupby('shipment_mode')['pack_price'].mean()
+
+# Print the grouped means
+print(xbar_pack_by_mode)
+
+
+Group late_shipments by shipment_mode and calculate the standard deviation pack_price for each group, storing the result in s_pack_by_mode.
+
+
+# Calculate the mean pack_price for each shipment_mode
+xbar_pack_by_mode = late_shipments.groupby("shipment_mode")['pack_price'].mean()
+
+# Calculate the standard deviation of the pack_price for each shipment_mode
+s_pack_by_mode = late_shipments.groupby("shipment_mode")['pack_price'].std()
+
+# Print the grouped standard deviations
+print(s_pack_by_mode)
+
+Create a boxplot from late_shipments with "pack_price" as x and "shipment_mode" as y.
+
+
+# Calculate the mean pack_price for each shipment_mode
+xbar_pack_by_mode = late_shipments.groupby("shipment_mode")['pack_price'].mean()
+
+# Calculate the standard deviation of the pack_price for each shipment_mode
+s_pack_by_mode = late_shipments.groupby("shipment_mode")['pack_price'].std()
+
+# Boxplot of shipment_mode vs. pack_price
+sns.boxplot(x = 'pack_price', y ='shipment_mode' , data = late_shipments)
+plt.show()
+
+
+Conducting an ANOVA test
+The box plots made it look like the distribution of pack price was different for each of the three shipment modes. However, it didn't tell us whether the mean pack price was different in each category. To determine that, we can use an ANOVA test. The null and alternative hypotheses can be written as follows.
+
+: Pack prices for every category of shipment mode are the same.
+
+: Pack prices for some categories of shipment mode are different.
+
+Use a significance level of 0.1.
+
+late_shipments is available and pingouin has been loaded.
+
+Instructions 1/2
+50 XP
+1
+2
+Run an ANOVA on late_shipments investigating 'pack_price' (the dependent variable) between the groups of 'shipment_mode'.
+
+# Run an ANOVA for pack_price across shipment_mode
+anova_results = pingouin.anova(data = late_shipments , dv= 'pack_price' , between = 'shipment_mode')
+
+
+
+# Print anova_results
+print(anova_results)
+
+
+
+
+Pairwise t-tests
+The ANOVA test didn't tell you which categories of shipment mode had significant differences in pack prices. To pinpoint which categories had differences, you could instead use pairwise t-tests.
+
+late_shipments is available and pingouin has been loaded.
+
+Instructions 1/3
+35 XP
+1
+2
+3
+Perform pairwise t-tests on late_shipments's pack_price variable, grouped by shipment_mode, without doing any p-value adjustment.
+
+# Perform a pairwise t-test on pack price, grouped by shipment mode
+pairwise_results = pingouin.pairwise_tests(data = late_shipments , dv = 'pack_price' , between = 'shipment_mode', padjust= 'none') 
+
+
+
+
+# Print pairwise_results
+print(pairwise_results)
+
+Modify the pairwise t-tests to use the Bonferroni p-value adjustment.
+
+# Modify the pairwise t-tests to use Bonferroni p-value adjustment
+pairwise_results = pingouin.pairwise_tests(data=late_shipments, 
+                                           dv="pack_price",
+                                           between="shipment_mode",
+                                           padjust="bonf")
+
+# Print pairwise_results
+print(pairwise_results)
+
+
+Question
+Using the Bonferroni correction results and assuming a significance level of 0.1, for which pairs of shipment modes should you reject the null hypothesis that the pack prices are equal?
+
+"Ocean" and "Air Charter"; "Ocean" and "Air"; "Air Charter" and "Air".
+
+Test for single proportions
+In Chapter 1, you calculated a p-value for a test hypothesizing that the proportion of late shipments was greater than 6%. In that chapter, you used a bootstrap distribution to estimate the standard error of the statistic. An alternative is to use an equation for the standard error based on the sample proportion, hypothesized proportion, and sample size.
+
+ 
+ 
+
+You'll revisit the p-value using this simpler calculation.
+
+late_shipments is available. pandas and numpy are available under their usual aliases, and norm is loaded from scipy.stats.
+
+Instructions 1/3
+35 XP
+2
+3
+Hypothesize that the proportion of late shipments is 6%.
+Calculate the sample proportion of shipments where late equals "Yes".
+Calculate the number of observations in the sample.
+
+# Hypothesize that the proportion of late shipments is 6%
+p_0 = 0.06
+
+# Calculate the sample proportion of late shipments
+p_hat = (late_shipments['late'] == 'Yes').mean()
+
+# Calculate the sample size
+n = len(late_shipments)
+
+# Print p_hat and n
+print(p_hat, n)
+
+
+Calculate the numerator and denominator of the z-score.
+Calculate the z-score as the ratio of these numbers.
+
+# Hypothesize that the proportion of late shipments is 6%
+p_0 = 0.06
+
+# Calculate the sample proportion of late shipments
+p_hat = (late_shipments['late'] == "Yes").mean()
+
+# Calculate the sample size
+n = len(late_shipments)
+
+# Calculate the numerator and denominator of the test statistic
+numerator = p_hat - p_0
+denominator = np.sqrt(p_0* (1 - p_0) / n)
+
+# Calculate the test statistic
+z_score = numerator / denominator
+
+# Print the result
+print(z_score)
+
+
+Transform the z-score into a p-value, remembering that this is a "greater than" alternative hypothesis.
+
+
+# Hypothesize that the proportion of late shipments is 6%
+p_0 = 0.06
+
+# Calculate the sample proportion of late shipments
+p_hat = (late_shipments['late'] == "Yes").mean()
+
+# Calculate the sample size
+n = len(late_shipments)
+
+# Calculate the numerator and denominator of the test statistic
+numerator = p_hat - p_0
+denominator = np.sqrt(p_0 * (1 - p_0) / n)
+
+# Calculate the test statistic
+z_score = numerator / denominator
+
+# Calculate the p-value from the z-score
+p_value = 1 - norm.cdf(z_score)
+
+# Print the p-value
+print(p_value)
+
+
+Test of two proportions
+You may wonder if the amount paid for freight affects whether or not the shipment was late. Recall that in the late_shipments dataset, whether or not the shipment was late is stored in the late column. Freight costs are stored in the freight_cost_group column, and the categories are "expensive" and "reasonable".
+
+The hypotheses to test, with "late" corresponding to the proportion of late shipments for that group, are
+
+: 
+
+: 
+
+p_hats contains the estimates of population proportions (sample proportions) for each freight_cost_group:
+
+freight_cost_group  late
+expensive           Yes     0.082569
+reasonable          Yes     0.035165
+Name: late, dtype: float64
+ns contains the sample sizes for these groups:
+
+freight_cost_group
+expensive     545
+reasonable    455
+Name: late, dtype: int64
+pandas and numpy have been imported under their usual aliases, and norm is available from scipy.stats.
+
+Instructions 1/4
+25 XP
+1
+2
+3
+4
+Calculate the pooled sample proportion, 
+, from p_hats and ns.
+
+# Calculate the pooled estimate of the population proportion
+p_hat = (ns["expensive"] * p_hats["expensive"] + ns['reasonable'] * p_hats['reasonable']) / (ns['expensive'] + ns['reasonable'])
+
+# Print the result
+print(p_hat)
+
+
+Calculate the standard error of the sample using this equation.
+
+ 
+ 
+
+Calculate p_hat multiplied by (1 - p_hat).
+Divide p_hat_times_not_p_hat by the number of "reasonable" rows and by the number of "expensive" rows, and sum those two values.
+Calculate std_error by taking the square root of p_hat_times_not_p_hat_over_ns.
+
+# Calculate the pooled estimate of the population proportion
+p_hat = (p_hats["reasonable"] * ns["reasonable"] + p_hats["expensive"] * ns["expensive"]) / (ns["reasonable"] + ns["expensive"])
+
+# Calculate p_hat one minus p_hat
+p_hat_times_not_p_hat = p_hat * (1 - p_hat)
+
+# Divide this by each of the sample sizes and then sum
+p_hat_times_not_p_hat_over_ns = p_hat_times_not_p_hat / ns["expensive"] + p_hat_times_not_p_hat / ns["reasonable"]
+
+# Calculate the standard error
+std_error = np.sqrt(p_hat_times_not_p_hat_over_ns)
+
+# Print the result
+print(std_error)
+
+Calculate the z-score using the following equation.
+
+# Calculate the pooled estimate of the population proportion
+p_hat = (p_hats["reasonable"] * ns["reasonable"] + p_hats["expensive"] * ns["expensive"]) / (ns["reasonable"] + ns["expensive"])
+
+# Calculate p_hat one minus p_hat
+p_hat_times_not_p_hat = p_hat * (1 - p_hat)
+
+# Divide this by each of the sample sizes and then sum
+p_hat_times_not_p_hat_over_ns = p_hat_times_not_p_hat / ns["expensive"] + p_hat_times_not_p_hat / ns["reasonable"]
+
+# Calculate the standard error
+std_error = np.sqrt(p_hat_times_not_p_hat_over_ns)
+
+# Calculate the z-score
+z_score = (p_hats["expensive"] - p_hats["reasonable"]) / std_error
+
+
+# Print z_score
+print(z_score)
+
+
+
+Calculate the p-value from the z-score.
+
+
+
+# Calculate the pooled estimate of the population proportion
+p_hat = (p_hats["reasonable"] * ns["reasonable"] + p_hats["expensive"] * ns["expensive"]) / (ns["reasonable"] + ns["expensive"])
+
+# Calculate p_hat one minus p_hat
+p_hat_times_not_p_hat = p_hat * (1 - p_hat)
+
+# Divide this by each of the sample sizes and then sum
+p_hat_times_not_p_hat_over_ns = p_hat_times_not_p_hat / ns["expensive"] + p_hat_times_not_p_hat / ns["reasonable"]
+
+# Calculate the standard error
+std_error = np.sqrt(p_hat_times_not_p_hat_over_ns)
+
+# Calculate the z-score
+z_score = (p_hats["expensive"] - p_hats["reasonable"]) / std_error
+
+# Calculate the p-value from the z-score
+p_value = 1 - norm.cdf(z_score)
+
+# Print p_value
+print(p_value)
+
+
+proportions_ztest() for two samples
+That took a lot of effort to calculate the p-value, so while it is useful to see how the calculations work, it isn't practical to do in real-world analyses. For daily usage, it's better to use the statsmodels package.
+
+Recall the hypotheses.
+
+: 
+
+: 
+
+late_shipments is available, containing the freight_cost_group column. numpy and pandas have been loaded under their standard aliases, and proportions_ztest has been loaded from statsmodels.stats.proportion.
+
+Instructions 1/2
+50 XP
+1
+2
+Get the counts of the late column grouped by freight_cost_group.
+
+# Count the late column values for each freight_cost_group
+late_by_freight_cost_group = late_shipments.groupby("freight_cost_group")['late'].value_counts()
+
+# Print the counts
+print(late_by_freight_cost_group)
+
+
+Extract the number of "Yes"'s for the two freight_cost_group into a numpy array, specifying the 'expensive' count and then 'reasonable'.
+Determine the overall number of rows in each freight_cost_group as a numpy array, specifying the 'expensive' count and then 'reasonable'.
+Run a z-test using proportions_ztest(), specifying alternative as "larger".
+
+# Count the late column values for each freight_cost_group
+late_by_freight_cost_group = late_shipments.groupby("freight_cost_group")['late'].value_counts()
+
+# Create an array of the "Yes" counts for each freight_cost_group
+success_counts = np.array([45, 16])
+
+# Create an array of the total number of rows in each freight_cost_group
+n = np.array([45 + 500, 16 + 439])
+
+# Run a z-test on the two proportions
+stat, p_value = proportions_ztest(count=success_counts, nobs=n,
+                                  alternative="larger")
+
+# Print the results
+print(stat, p_value)
+
+
+Performing a chi-square test
+The chi-square independence test compares proportions of successes of one categorical variable across the categories of another categorical variable.
+
+Trade deals often use a form of business shorthand in order to specify the exact details of their contract. These are International Chamber of Commerce (ICC) international commercial terms, or incoterms for short.
+
+The late_shipments dataset includes a vendor_inco_term that describes the incoterms that applied to a given shipment. The choices are:
+
+EXW: "Ex works". The buyer pays for transportation of the goods.
+CIP: "Carriage and insurance paid to". The seller pays for freight and insurance until the goods board a ship.
+DDP: "Delivered duty paid". The seller pays for transportation of the goods until they reach a destination port.
+FCA: "Free carrier". The seller pays for transportation of the goods.
+Perhaps the incoterms affect whether or not the freight costs are expensive. Test these hypotheses with a significance level of 0.01.
+
+: vendor_inco_term and freight_cost_group are independent.
+
+: vendor_inco_term and freight_cost_group are associated.
+
+late_shipments is available, and the following have been loaded: matplotlib.pyplot as plt, pandas as pd, and pingouin.
+
+Instructions 1/5
+20 XP
+1
+2
+3
+4
+5
+Calculate the proportion of freight_cost_group in late_shipments grouped by vendor_inco_term.
+
+# Proportion of freight_cost_group grouped by vendor_inco_term
+props = late_shipments.groupby('vendor_inco_term')['freight_cost_group'].value_counts()
+
+# Print props
+print(props)
+
+Unstack the .value_counts() result to be in wide format instead of long.
+
+# Proportion of freight_cost_group grouped by vendor_inco_term
+props = late_shipments.groupby('vendor_inco_term')['freight_cost_group'].value_counts(normalize=True)
+
+# Convert props to wide format
+wide_props = props.unstack()
+
+# Print wide_props
+print(wide_props)
+
+
+Create a proportional stacked bar plot with bars filled based on freight_cost_group across the levels of vendor_inco_term.
+
+
+# Proportion of freight_cost_group grouped by vendor_inco_term
+props = late_shipments.groupby('vendor_inco_term')['freight_cost_group'].value_counts(normalize=True)
+
+# Convert props to wide format
+wide_props = props.unstack()
+
+# Proportional stacked bar plot of freight_cost_group vs. vendor_inco_term
+wide_props.plot(kind = 'bar' , stacked = True)
+plt.show()
+
+
+
+Perform a chi-square test of independence on freight_cost_group and vendor_inco_term in the late_shipments dataset.
+
+# Proportion of freight_cost_group grouped by vendor_inco_term
+props = late_shipments.groupby('vendor_inco_term')['freight_cost_group'].value_counts(normalize=True)
+
+# Convert props to wide format
+wide_props = props.unstack()
+
+# Proportional stacked bar plot of freight_cost_group vs. vendor_inco_term
+wide_props.plot(kind="bar", stacked=True)
+plt.show()
+
+# Determine if freight_cost_group and vendor_inco_term are independent
+expected, observed, stats= pingouin.chi2_independence(data = late_shipments , x ='freight_cost_group', y = 'vendor_inco_term')
+
+# Print results
+print(stats[stats['test'] == 'pearson']) 
+
+What should you conclude from the hypothesis test?
+
+Reject the null hypothesis and conclude that vendor_inco_term and freight_cost_group are associated.
+
+Visualizing goodness of fit
+The chi-square goodness of fit test compares proportions of each level of a categorical variable to hypothesized values. Before running such a test, it can be helpful to visually compare the distribution in the sample to the hypothesized distribution.
+
+Recall the vendor incoterms in the late_shipments dataset. You hypothesize that the four values occur with these frequencies in the population of shipments.
+
+CIP: 0.05
+DDP: 0.1
+EXW: 0.75
+FCA: 0.1
+These frequencies are stored in the hypothesized DataFrame.
+
+The incoterm_counts DataFrame stores the .value_counts() of the vendor_inco_term column.
+
+late_shipments is available; pandas and matplotlib.pyplot are loaded with their standard aliases.
+
+Instructions 1/4
+25 XP
+1
+2
+3
+4
+Find the total number of rows in late_shipments.
+
+# Find the number of rows in late_shipments
+n_total = len(late_shipments)
+
+# Print n_total
+print(n_total)
+
+
+
+
+Add a column named n to the hypothesized DataFrame that is the hypothesized prop column times n_total.
+
+# Find the number of rows in late_shipments
+n_total = len(late_shipments)
+
+# Create n column that is prop column * n_total
+hypothesized['n'] = hypothesized['prop'] * n_total
+
+# Print the modified hypothesized DataFrame
+print(hypothesized)
+
+
+Create a bar graph of 'n' versus 'vendor_inco_term' for the incoterm_counts data, specifying a red color.
+
+
+
+# Find the number of rows in late_shipments
+n_total = len(late_shipments)
+
+# Create n column that is prop column * n_total
+hypothesized["n"] = hypothesized["prop"] * n_total
+
+# Plot a red bar graph of n vs. vendor_inco_term for incoterm_counts
+plt.bar(incoterm_counts['vendor_inco_term'] , incoterm_counts['n'],color = 'red', label="Observed")
+plt.legend()
+plt.show()
+
+Add blue bars to the plot showing the same results from the hypothesized DataFrame, specifying an alpha of 0.5.
+
+
+# Find the number of rows in late_shipments
+n_total = len(late_shipments)
+
+# Create n column that is prop column * n_total
+hypothesized["n"] = hypothesized["prop"] * n_total
+
+# Plot a red bar graph of n vs. vendor_inco_term for incoterm_counts
+plt.bar(incoterm_counts['vendor_inco_term'], incoterm_counts['n'], color="red", label="Observed")
+
+# Add a blue bar plot for the hypothesized counts
+plt.bar(hypothesized['vendor_inco_term'], hypothesized['n'], color = 'blue', alpha = 0.5,  label="Hypothesized")
+plt.legend()
+plt.show()
+
+Using the incoterm_counts and hypothesized datasets, perform a chi-square goodness of fit test on the incoterm counts, n.
+
+# Perform a goodness of fit test on the incoterm counts n
+gof_test = chisquare(f_obs = incoterm_counts['n'] , f_exp = hypothesized['n'])
+
+
+# Print gof_test results
+print(gof_test)
+
+
+Testing sample size
+In order to conduct a hypothesis test and be sure that the result is fair, a sample must meet three requirements: it is a random sample of the population, the observations are independent, and there are enough observations. Of these, only the last condition is easily testable with code.
+
+The minimum sample size depends on the type of hypothesis tests you want to perform. You'll now test some scenarios on the late_shipments dataset.
+
+Note that the .all() method from pandas can be used to check if all elements are true. For example, given a DataFrame df with numeric entries, you check to see if all its elements are less than 5, using (df < 5).all().
+
+late_shipments is available, and pandas is loaded as pd.
+
+Instructions 1/4
+25 XP
+1
+Get the count of each value in the freight_cost_group column of late_shipments.
+Insert a suitable number to inspect whether the counts are "big enough" for a two sample t-test.
+
+# Count the freight_cost_group values
+counts = late_shipments['freight_cost_group'].value_counts()
+
+# Print the result
+print(counts)
+
+# Inspect whether the counts are big enough
+print((counts >= 30).all())
+
+
+Get the count of each value in the late column of late_shipments.
+Insert a suitable number to inspect whether the counts are "big enough" for a one sample proportion test.
+
+# Count the late values
+counts = late_shipments['late'].value_counts()
+
+# Print the result
+print(counts)
+
+# Inspect whether the counts are big enough
+print((counts >= 10).all())
+
+
+Get the count of each value in the freight_cost_group column of late_shipments grouped by vendor_inco_term.
+Insert a suitable number to inspect whether the counts are "big enough" for a chi-square independence test.
+
+# Count the values of freight_cost_group grouped by vendor_inco_term
+counts = late_shipments.groupby('vendor_inco_term')['freight_cost_group'].value_counts()
+
+# Print the result
+print(counts)
+
+# Inspect whether the counts are big enough
+print((counts >= 5).all())
+
+
+Get the count of each value in the shipment_mode column of late_shipments.
+Insert a suitable number to inspect whether the counts are "big enough" for an ANOVA test.
+
+# Count the shipment_mode values
+counts = late_shipments['shipment_mode'].value_counts()
+
+# Print the result
+print(counts)
+
+# Inspect whether the counts are big enough
+print((counts >= 30).all())
+
+
+Wilcoxon signed-rank test
+You'll explore the difference between the proportion of county-level votes for the Democratic candidate in 2012 and 2016 to identify if the difference is significant.
+
+sample_dem_data is available, and has columns dem_percent_12 and dem_percent_16 in addition to state and county names. The following packages have also been loaded: pingouin and pandas as pd.
+
+Instructions 1/2
+50 XP
+1
+Conduct a paired t-test on the percentage columns using an appropriate alternative hypothesis.
+
+# Conduct a paired t-test on dem_percent_12 and dem_percent_16
+paired_test_results = pingouin.ttest(sample_dem_data['dem_percent_12'], sample_dem_data['dem_percent_16'] , paired = True) 
+
+# Print paired t-test results
+print(paired_test_results)
+
+
+Conduct a Wilcoxon-signed rank test on the same columns.
+
+
+# Conduct a Wilcoxon test on dem_percent_12 and dem_percent_16
+wilcoxon_test_results = pingouin.wilcoxon(x = sample_dem_data['dem_percent_12'], y = sample_dem_data['dem_percent_16'] , alternative ='greater')
+
+
+
+# Print Wilcoxon test results
+print(wilcoxon_test_results)
+
+
+Wilcoxon-Mann-Whitney
+Another class of non-parametric hypothesis tests are called rank sum tests. Ranks are the positions of numeric values from smallest to largest. Think of them as positions in running events: whoever has the fastest (smallest) time is rank 1, second fastest is rank 2, and so on.
+
+By calculating on the ranks of data instead of the actual values, you can avoid making assumptions about the distribution of the test statistic. It's more robust in the same way that a median is more robust than a mean.
+
+One common rank-based test is the Wilcoxon-Mann-Whitney test, which is like a non-parametric t-test.
+
+late_shipments is available, and the following packages have been loaded: pingouin and pandas as pd.
+
+Instructions
+0 XP
+Select weight_kilograms and late from late_shipments, assigning the name weight_vs_late.
+Convert weight_vs_late from long-to-wide format, setting columns to 'late'.
+Run a Wilcoxon-Mann-Whitney test for a difference in weight_kilograms when the shipment was late and on-time.
+
+# Select the weight_kilograms and late columns
+weight_vs_late = late_shipments[["weight_kilograms", "late"]]
+
+# Convert weight_vs_late into wide format
+weight_vs_late_wide = weight_vs_late.pivot(columns='late', 
+                                           values='weight_kilograms')
+
+# Run a two-sided Wilcoxon-Mann-Whitney test on weight_kilograms vs. late
+wmw_test = pingouin.mwu(x=weight_vs_late_wide['No'],
+                        y=weight_vs_late_wide['Yes'],
+                        alternative='two-sided')
+
+# Print the test results
+print(wmw_test)
+
+
+Kruskal-Wallis
+Recall that the Kruskal-Wallis test is a non-parametric version of an ANOVA test, comparing the means across multiple groups.
+
+late_shipments is available, and the following packages have been loaded: pingouin and pandas as pd.
+
+Instructions
+0 XP
+Run a Kruskal-Wallis test on weight_kilograms between the different shipment modes in late_shipments.
+
+# Run a Kruskal-Wallis test on weight_kilograms vs. shipment_mode
+kw_test = pingouin.kruskal(data=late_shipments, 
+                           dv='weight_kilograms',
+                           between='shipment_mode')
+
+# Print the results
+print(kw_test)
